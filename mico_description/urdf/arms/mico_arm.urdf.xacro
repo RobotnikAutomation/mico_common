@@ -130,7 +130,9 @@
     
     <transmission name="j1_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_1" />
+     <joint name="mico_joint_1">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     
      <actuator name="j1_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${j1_mechanical_reduction}</mechanicalReduction>
@@ -184,7 +186,9 @@
     
     <transmission name="j2_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_2" />
+     <joint name="mico_joint_2">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     
      <actuator name="j2_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${j2_mechanical_reduction}</mechanicalReduction>
@@ -238,7 +242,9 @@
     
     <transmission name="j3_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_3" />
+     <joint name="mico_joint_3">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     		 
      <actuator name="j3_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${j3_mechanical_reduction}</mechanicalReduction>
@@ -293,7 +299,9 @@
     
     <transmission name="j4_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_4" />
+     <joint name="mico_joint_4">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>          
      <actuator name="j4_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${j4_mechanical_reduction}</mechanicalReduction>
@@ -348,7 +356,9 @@
     
     <transmission name="j5_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_5" />
+     <joint name="mico_joint_5">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     		 
      <actuator name="j5_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${j5_mechanical_reduction}</mechanicalReduction>
@@ -402,7 +412,9 @@
     
     <transmission name="j6_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_6" />
+     <joint name="mico_joint_6">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     
      <actuator name="j6_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${j6_mechanical_reduction}</mechanicalReduction>
@@ -456,7 +468,9 @@
         
     <transmission name="jf1_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_finger_1" />
+     <joint name="mico_joint_finger_1">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     		 
      <actuator name="jf1_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${jf1_mechanical_reduction}</mechanicalReduction>
@@ -511,7 +525,9 @@
         
     <transmission name="jf2_trans">
 	 <type>transmission_interface/SimpleTransmission</type>
-     <joint name="mico_joint_finger_2" />
+     <joint name="mico_joint_finger_2">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+     </joint>     
      <actuator name="jf2_motor">
 	    <hardwareInterface>EffortJointInterface</hardwareInterface>
         <mechanicalReduction>${jf2_mechanical_reduction}</mechanicalReduction>
