@@ -1,0 +1,23 @@
+<package>
+  <name>mico_common</name>
+  <version>1.0.0</version>
+  <description>URDF description of the Mico Arm robot and other files for robot representation and control via MoveIt.</description>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/mico_common</url>
+  <url type="bugtracker">https://github.com/RobotnikAutomation/mico_common/issues</url>
+
+  <author email="info@robotnik.es">Robotnik</author>
+  <maintainer email="info@robotnik.es">Robotnik</maintainer>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>mico_description</run_depend>
+  <run_depend>mico_moveit_config</run_depend>
+  <!-- run_depend>mico_pad</run_depend -->
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
