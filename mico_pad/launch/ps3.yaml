@@ -1,0 +1,19 @@
+num_of_buttons: 7
+button_up: 12
+button_down: 14
+button_select: 0
+button_fold: 3        
+button_open: 13
+button_close: 15  
+dead_man_arm: 11
+button_euler: 9
+button_select: 0
+axis_linear_x: 1
+axis_linear_y: 0
+axis_linear_z: 3 
+axis_angular_x: 1
+axis_angular_y: 0
+axis_angular_z: 2
+scale_linear: 0.25
+scale_angular: 0.25 
+
