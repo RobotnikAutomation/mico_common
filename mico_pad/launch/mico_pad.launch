@@ -2,7 +2,7 @@
 <launch>
 
  <!-- joy node -->
-  <node name="joy_roman" pkg="joy" type="joy_node" respawn="true">
+  <node name="joy_mico" pkg="joy" type="joy_node" respawn="true">
     <param name="dev" type="string" value="/dev/input/js0" />
     <param name="deadzone" value="0.12" />
     <param name="autorepeat_rate" value="10.0" type="double" />

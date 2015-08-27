@@ -8,7 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   roscpp
   sensor_msgs
-  jaco_msgs
+#  jaco_msgs
+  kinova_msgs
   actionlib
   message_generation
 )

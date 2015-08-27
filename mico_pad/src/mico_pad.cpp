@@ -32,9 +32,9 @@
  */
 
 #include <ros/ros.h>
-#include <jaco_msgs/JointVelocity.h>
+#include <kinova_msgs/JointVelocity.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <jaco_msgs/HomeArm.h>
+#include <kinova_msgs/HomeArm.h>
 
 #include <sensor_msgs/Joy.h>
 #include <std_srvs/Empty.h>
@@ -42,9 +42,10 @@
 #include <std_msgs/Int32.h>
 
 #include <actionlib/client/simple_action_client.h>
-#include <jaco_msgs/SetFingersPositionAction.h>
-#include <jaco_msgs/SetFingersPositionActionGoal.h>
-#include <jaco_msgs/FingerPosition.h>
+#include <kinova_msgs/SetFingersPositionAction.h>
+#include <kinova_msgs/SetFingersPositionActionGoal.h>
+#include <kinova_msgs/FingerPosition.h>
+
 
 #define DEFAULT_NUM_OF_BUTTONS		20
 //#define ARM							0
@@ -60,7 +61,14 @@
 #define DEFAULT_SCALE_LINEAR		1.0
 #define DEFAULT_SCALE_ANGULAR		1.0
 
-typedef actionlib::SimpleActionClient<jaco_msgs::SetFingersPositionAction> MicoActionClient;
+#define MODE_CARTESIAN_EULER        1
+#define MODE_JOINT_BY_JOINT         2
+// #define MODE_TRAJECTORY             3
+
+#define MAX_JOINTS					6
+
+
+typedef actionlib::SimpleActionClient<kinova_msgs::SetFingersPositionAction> MicoActionClient;
 
 class MicoPad
 {
@@ -69,7 +77,7 @@ class MicoPad
 
 	private:
 	void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
-	void fingerCallback(const jaco_msgs::FingerPosition::ConstPtr& finger_position);
+	void fingerCallback(const kinova_msgs::FingerPosition::ConstPtr& finger_position);
 
 	ros::NodeHandle nh_;
 
@@ -108,7 +116,13 @@ class MicoPad
 	MicoActionClient ac_;	
 	
 	ros::Subscriber finger_sub_;
-	jaco_msgs::FingerPosition finger_pos_;
+	kinova_msgs::FingerPosition finger_pos_;
+	
+	//! control mode
+	int control_mode_;
+	
+	//! selected joint
+	int iSelectedJoint_;
 };
 
 
@@ -153,13 +167,13 @@ MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true) {
  	 // Listen through the node handle sensor_msgs::Joy messages from joystick
 	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &MicoPad::joyCallback, this);
 	
-	finger_sub_ = nh_.subscribe<jaco_msgs::FingerPosition>("/mico_arm_driver/out/finger_position", 10, &MicoPad::fingerCallback, this);
+	finger_sub_ = nh_.subscribe<kinova_msgs::FingerPosition>("/mico_arm_driver/out/finger_position", 10, &MicoPad::fingerCallback, this);
 
 	// Request service to send commands to the arm
-	arm_fold_client = nh_.serviceClient<jaco_msgs::HomeArm>("/mico_arm_driver/in/home_arm");
+	arm_fold_client = nh_.serviceClient<kinova_msgs::HomeArm>("/mico_arm_driver/in/home_arm");
 
 	// Publishes into the arm controller
-	arm_ref_joint_pub_ = nh_.advertise<jaco_msgs::JointVelocity>("/mico_arm_driver/in/joint_velocity", 1);
+	arm_ref_joint_pub_ = nh_.advertise<kinova_msgs::JointVelocity>("/mico_arm_driver/in/joint_velocity", 1);
 	arm_ref_cartesian_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 1);
 	  
     // Publishes into the arm controller
@@ -170,10 +184,13 @@ MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true) {
     finger_pos_.finger1 = 0.0;
     finger_pos_.finger2 = 0.0;
     finger_pos_.finger3 = 0.0;
+    
+    control_mode_ = MODE_CARTESIAN_EULER;
+    iSelectedJoint_ = 1;
    	
 }
 
-void MicoPad::fingerCallback(const jaco_msgs::FingerPosition::ConstPtr& finger_position)
+void MicoPad::fingerCallback(const kinova_msgs::FingerPosition::ConstPtr& finger_position)
 {
 	// Just store current positions in global structure
 	finger_pos_.finger1 = finger_position->finger1;
@@ -186,19 +203,6 @@ void MicoPad::fingerCallback(const jaco_msgs::FingerPosition::ConstPtr& finger_p
 void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
 
-	jaco_msgs::JointVelocity arm;
-	// geometry_msgs::Twist ref;	
-	geometry_msgs::TwistStamped ref;
-	
-	ref.twist.linear.x = 0.0;
-	ref.twist.linear.y = 0.0;
-	ref.twist.linear.z = 0.0;
-	
-	ref.twist.angular.x = 0.0;
-	ref.twist.angular.y = 0.0;
-	ref.twist.angular.z = 0.0;
-
-
 	int32_t gripper_ref = 0;
 	bool gripper_event = false;
 	
@@ -209,18 +213,32 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		if (joy->buttons[button_up_] == 1){
 			if(!bRegisteredButtonEvent[button_up_]){
 				bRegisteredButtonEvent[button_up_] = true;
-									
+				iSelectedJoint_ = iSelectedJoint_ + 1; 
+				if (iSelectedJoint_ > MAX_JOINTS) iSelectedJoint_ = MAX_JOINTS;			
+				ROS_INFO("Selected Joint = %d", iSelectedJoint_);
 			}
 		}else if (joy->buttons[button_down_] == 1){
 			if(!bRegisteredButtonEvent[button_down_]){
 				bRegisteredButtonEvent[button_down_] = true;
-				
+				iSelectedJoint_ = iSelectedJoint_ - 1; 
+				if (iSelectedJoint_ < 1) iSelectedJoint_ = 1;
+				ROS_INFO("Selected Joint = %d", iSelectedJoint_);
 			}
+		
 		
 		// Used to change between different robot operation modes (jbj, cartesian-euler and trajectory)
 		}else if (joy->buttons[button_select_] == 1){
 			if(!bRegisteredButtonEvent[button_select_]){
 				bRegisteredButtonEvent[button_select_] = true;				
+				// Two modes jbj / cartesian-euler
+				if (control_mode_ == MODE_CARTESIAN_EULER) {
+						control_mode_ = MODE_JOINT_BY_JOINT;
+						ROS_INFO("Control Mode JOINT BY JOINT");
+						}
+				else if (control_mode_ == MODE_JOINT_BY_JOINT) {
+						control_mode_ = MODE_CARTESIAN_EULER;
+						ROS_INFO("Control Mode CARTESIAN");
+						}
 			}
 					
 		// Allow to fold the arm throught the pad	
@@ -228,34 +246,76 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 			if(!bRegisteredButtonEvent[button_fold_]){
 				bRegisteredButtonEvent[button_fold_] = true;
 				
-				jaco_msgs::HomeArm srv;				
+				kinova_msgs::HomeArm srv;				
 				arm_fold_client.call(srv);		
 			}
 		}else{
-			
-			ref.header.stamp = ros::Time::now();
-			ref.header.frame_id = "mico_link_base";
+			// OPERATE DEPENDING ON MODE
+			switch (control_mode_) {
+				case MODE_CARTESIAN_EULER:
+					{	
+					geometry_msgs::TwistStamped ref_cart;
+					
+					ref_cart.twist.linear.x = 0.0;
+					ref_cart.twist.linear.y = 0.0;
+					ref_cart.twist.linear.z = 0.0;
+					
+					ref_cart.twist.angular.x = 0.0;
+					ref_cart.twist.angular.y = 0.0;
+					ref_cart.twist.angular.z = 0.0;
 						
-			if (joy->buttons[button_euler_] == 0) {
-				// Arm linear references
-				ref.twist.linear.x = l_scale_ * joy->axes[linear_x_];
-				ref.twist.linear.y = l_scale_ * joy->axes[linear_y_];
-				ref.twist.linear.z = l_scale_ * joy->axes[linear_z_];
-				}
-			else {				
-				ref.twist.angular.x = a_scale_ * joy->axes[angular_x_];					
-				ref.twist.angular.y = -a_scale_ * joy->axes[angular_y_];					
-				ref.twist.angular.z = -a_scale_ * joy->axes[angular_z_];					
-				}
+					ref_cart.header.stamp = ros::Time::now();
+					ref_cart.header.frame_id = "mico_link_base";
+						
+					if (joy->buttons[button_euler_] == 0) {
+						// Arm linear references
+						ref_cart.twist.linear.x = l_scale_ * joy->axes[linear_x_];
+						ref_cart.twist.linear.y = l_scale_ * joy->axes[linear_y_];
+						ref_cart.twist.linear.z = l_scale_ * joy->axes[linear_z_];
+						}
+					else {				
+						ref_cart.twist.angular.x = a_scale_ * joy->axes[angular_x_];					
+						ref_cart.twist.angular.y = -a_scale_ * joy->axes[angular_y_];					
+						ref_cart.twist.angular.z = -a_scale_ * joy->axes[angular_z_];					
+						}
 			
-            // Gripper speed reference
-            // if (joy->axes[button_close_]!=0.0) {                                              
+            		// Publish cartesian ref message
+            		arm_ref_cartesian_pub_.publish(ref_cart);	            		
+            		break;
+					}
+				case MODE_JOINT_BY_JOINT:
+					{
+					kinova_msgs::JointVelocity ref_jbj;	
+					ref_jbj.joint1 = 0;
+					ref_jbj.joint2 = 0;
+					ref_jbj.joint3 = 0;
+					ref_jbj.joint4 = 0;
+					ref_jbj.joint5 = 0;
+					ref_jbj.joint6 = 0; 
+					// Values in grad / second
+					double jbj_scale = 10.0;
+					if (iSelectedJoint_==1) ref_jbj.joint1 = jbj_scale * joy->axes[angular_x_];
+					if (iSelectedJoint_==2) ref_jbj.joint2 = jbj_scale * joy->axes[angular_x_];
+					if (iSelectedJoint_==3) ref_jbj.joint3 = jbj_scale * joy->axes[angular_x_];
+					if (iSelectedJoint_==4) ref_jbj.joint4 = jbj_scale * joy->axes[angular_x_];
+					if (iSelectedJoint_==5) ref_jbj.joint5 = jbj_scale * joy->axes[angular_x_];
+					if (iSelectedJoint_==6) ref_jbj.joint6 = jbj_scale * joy->axes[angular_x_];
+					
+					// Publish jbj ref message
+            		arm_ref_joint_pub_.publish(ref_jbj);	            		
+				
+					break;
+					}
+				}
+
+
+            // Gripper speed reference                                                     
 			if (joy->buttons[button_close_] == 1) {                                              
                  gripper_ref = (int) -(joy->axes[button_close_] * 100.0);
                  gripper_event = true;
                  
                  // Close
-				 jaco_msgs::SetFingersPositionGoal goal;
+				 kinova_msgs::SetFingersPositionGoal goal;
 				 goal.fingers.finger1 = finger_pos_.finger1 + 2000.0;
 				 if (goal.fingers.finger1 > 7000) goal.fingers.finger1 = 7000;
 				 goal.fingers.finger2 = finger_pos_.finger2 + 2000.0;
@@ -269,7 +329,7 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
                  gripper_event = true;
                  
 				 // Open
-				 jaco_msgs::SetFingersPositionGoal goal;
+				 kinova_msgs::SetFingersPositionGoal goal;
 				 goal.fingers.finger1 = finger_pos_.finger1 - 2000.0;
 				 if (goal.fingers.finger1 < 0) goal.fingers.finger1 = 0;
 				 goal.fingers.finger2 = finger_pos_.finger2 - 2000.0;
@@ -286,7 +346,6 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 			bRegisteredButtonEvent[button_select_] = false;
 			bRegisteredButtonEvent[button_fold_] = false;
 			
-			arm_ref_cartesian_pub_.publish(ref);	
 		}
 	}
 	
@@ -295,7 +354,7 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		std_msgs::Int32 msg;
 		msg.data = gripper_ref; 
 		gripper_ref_pub_.publish(msg);									
-	}
+		}
 	
 }
 
