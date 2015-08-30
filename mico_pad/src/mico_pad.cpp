@@ -293,7 +293,7 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 					ref_jbj.joint5 = 0;
 					ref_jbj.joint6 = 0; 
 					// Values in grad / second
-					double jbj_scale = 10.0;
+					double jbj_scale = 180.0 / 3.1416 * a_scale_; 					
 					if (iSelectedJoint_==1) ref_jbj.joint1 = jbj_scale * joy->axes[angular_x_];
 					if (iSelectedJoint_==2) ref_jbj.joint2 = jbj_scale * joy->axes[angular_x_];
 					if (iSelectedJoint_==3) ref_jbj.joint3 = jbj_scale * joy->axes[angular_x_];
