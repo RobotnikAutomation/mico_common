@@ -80,6 +80,7 @@ class MicoPad
 	void fingerCallback(const kinova_msgs::FingerPosition::ConstPtr& finger_position);
 
 	ros::NodeHandle nh_;
+	ros::NodeHandle pnh_; // Private node handle
 
 	//! It will publish into command velocity (for the robot)
 	ros::Publisher arm_ref_joint_pub_, arm_ref_cartesian_pub_, gripper_ref_pub_;
@@ -126,38 +127,40 @@ class MicoPad
 };
 
 
-MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true) {
+MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true),
+                     pnh_("~")
+ {
 
 
-	nh_.param("num_of_buttons", num_of_buttons_, DEFAULT_NUM_OF_BUTTONS);
+	pnh_.param("num_of_buttons", num_of_buttons_, DEFAULT_NUM_OF_BUTTONS);
 
 	//GENERIC BUTTONS
-	nh_.param("button_up", button_up_, button_up_);  				// Triangle PS3
-	nh_.param("button_down", button_down_, button_down_); 	    	// Cross PS3
-	nh_.param("button_select", button_select_, button_select_);		// Select PS3
-	nh_.param("button_fold", button_fold_, button_fold_);			// Start PS3
-	nh_.param("button_open", button_open_, button_open_);			// Circle PS3
-	nh_.param("button_close", button_close_, button_close_);	    // Square PS3
-	nh_.param("button_euler", button_euler_, button_euler_);	    // Square PS3
+	pnh_.param("button_up", button_up_, button_up_);  				// Triangle PS3
+	pnh_.param("button_down", button_down_, button_down_); 	    	// Cross PS3
+	pnh_.param("button_select", button_select_, button_select_);		// Select PS3
+	pnh_.param("button_fold", button_fold_, button_fold_);			// Start PS3
+	pnh_.param("button_open", button_open_, button_open_);			// Circle PS3
+	pnh_.param("button_close", button_close_, button_close_);	    // Square PS3
+	pnh_.param("button_euler", button_euler_, button_euler_);	    // Square PS3
 	
-	nh_.param<std::string>("mico_joy", topic_joy, "joy");	    
+	pnh_.param<std::string>("mico_joy", topic_joy, "joy");	    
 	
 	ROS_INFO("MicoPad: joy_topic = %s", topic_joy.c_str());
 
 	// ARM CONF
-	nh_.param("dead_man_arm", dead_man_arm_, dead_man_arm_);					// R2 PS3
+	pnh_.param("dead_man_arm", dead_man_arm_, dead_man_arm_);					// R2 PS3
 
     // JOY AXIS DEFINITION AND SCALING 
-	nh_.param("axis_linear_x", linear_x_, DEFAULT_AXIS_LINEAR_X);
-    nh_.param("axis_linear_y", linear_y_, DEFAULT_AXIS_LINEAR_Y);
-    nh_.param("axis_linear_z", linear_z_, DEFAULT_AXIS_LINEAR_Z);
+	pnh_.param("axis_linear_x", linear_x_, DEFAULT_AXIS_LINEAR_X);
+    pnh_.param("axis_linear_y", linear_y_, DEFAULT_AXIS_LINEAR_Y);
+    pnh_.param("axis_linear_z", linear_z_, DEFAULT_AXIS_LINEAR_Z);
 
-	nh_.param("axis_angular_x", angular_x_, DEFAULT_AXIS_ANGULAR_X);
-    nh_.param("axis_angular_y", angular_y_, DEFAULT_AXIS_ANGULAR_Y);
-    nh_.param("axis_angular_z", angular_z_, DEFAULT_AXIS_ANGULAR_Z);
+	pnh_.param("axis_angular_x", angular_x_, DEFAULT_AXIS_ANGULAR_X);
+    pnh_.param("axis_angular_y", angular_y_, DEFAULT_AXIS_ANGULAR_Y);
+    pnh_.param("axis_angular_z", angular_z_, DEFAULT_AXIS_ANGULAR_Z);
 
-	nh_.param("scale_angular", a_scale_, DEFAULT_SCALE_ANGULAR);
-	nh_.param("scale_linear", l_scale_, DEFAULT_SCALE_LINEAR);
+	pnh_.param("scale_angular", a_scale_, DEFAULT_SCALE_ANGULAR);
+	pnh_.param("scale_linear", l_scale_, DEFAULT_SCALE_LINEAR);
 
 	//bRegisteredButtonEvent = new bool(num_of_buttons_);
 	for(int i = 0; i < DEFAULT_NUM_OF_BUTTONS; i++){
@@ -167,7 +170,7 @@ MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true) {
  	 // Listen through the node handle sensor_msgs::Joy messages from joystick
 	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &MicoPad::joyCallback, this);
 	
-	finger_sub_ = nh_.subscribe<kinova_msgs::FingerPosition>("/mico_arm_driver/out/finger_position", 10, &MicoPad::fingerCallback, this);
+	finger_sub_ = nh_.subscribe<kinova_msgs::FingerPosition>("/mico_arm_driver/out/finger_position", 10, &MicoPad::fingerCallback, this);	
 
 	// Request service to send commands to the arm
 	arm_fold_client = nh_.serviceClient<kinova_msgs::HomeArm>("/mico_arm_driver/in/home_arm");
