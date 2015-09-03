@@ -6,8 +6,8 @@ mico_arm_driver:
    button_fold: 3        
    button_open: 13
    button_close: 15  
-   dead_man_arm: 11
-   button_euler: 9
+   dead_man_arm: 10
+   button_euler: 8
    button_select: 0
    axis_linear_x: 1
    axis_linear_y: 0
