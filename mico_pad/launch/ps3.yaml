@@ -1,4 +1,4 @@
-mico_arm_driver:
+mico_pad:
    num_of_buttons: 7
    button_up: 12
    button_down: 14

@@ -143,21 +143,20 @@ MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true),
 	pnh_.param("button_close", button_close_, button_close_);	    // Square PS3
 	pnh_.param("button_euler", button_euler_, button_euler_);	    // Square PS3
 	
-	pnh_.param<std::string>("mico_joy", topic_joy, "joy");	    
-	
-	ROS_INFO("MicoPad: joy_topic = %s", topic_joy.c_str());
+	//pnh_.param<std::string>("mico_joy", topic_joy, "joy");	    	
+	//ROS_INFO("MicoPad: joy_topic = %s", topic_joy.c_str());
 
 	// ARM CONF
 	pnh_.param("dead_man_arm", dead_man_arm_, dead_man_arm_);					// R2 PS3
 
     // JOY AXIS DEFINITION AND SCALING 
 	pnh_.param("axis_linear_x", linear_x_, DEFAULT_AXIS_LINEAR_X);
-    pnh_.param("axis_linear_y", linear_y_, DEFAULT_AXIS_LINEAR_Y);
-    pnh_.param("axis_linear_z", linear_z_, DEFAULT_AXIS_LINEAR_Z);
+        pnh_.param("axis_linear_y", linear_y_, DEFAULT_AXIS_LINEAR_Y);
+        pnh_.param("axis_linear_z", linear_z_, DEFAULT_AXIS_LINEAR_Z);
 
 	pnh_.param("axis_angular_x", angular_x_, DEFAULT_AXIS_ANGULAR_X);
-    pnh_.param("axis_angular_y", angular_y_, DEFAULT_AXIS_ANGULAR_Y);
-    pnh_.param("axis_angular_z", angular_z_, DEFAULT_AXIS_ANGULAR_Z);
+        pnh_.param("axis_angular_y", angular_y_, DEFAULT_AXIS_ANGULAR_Y);
+        pnh_.param("axis_angular_z", angular_z_, DEFAULT_AXIS_ANGULAR_Z);
 
 	pnh_.param("scale_angular", a_scale_, DEFAULT_SCALE_ANGULAR);
 	pnh_.param("scale_linear", l_scale_, DEFAULT_SCALE_LINEAR);
