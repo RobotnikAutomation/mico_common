@@ -9,6 +9,7 @@ mico_pad:
    dead_man_arm: 10
    button_euler: 8
    button_select: 0
+   button_gripper: 9
    axis_linear_x: 1
    axis_linear_y: 0
    axis_linear_z: 3 

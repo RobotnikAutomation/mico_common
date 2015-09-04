@@ -67,6 +67,9 @@
 
 #define MAX_JOINTS					6
 
+#define GRIPPER_MODE_2FG            1
+#define GRIPPER_MODE_3FG            2
+
 
 typedef actionlib::SimpleActionClient<kinova_msgs::SetFingersPositionAction> MicoActionClient;
 
@@ -94,6 +97,8 @@ class MicoPad
 	int button_fold_;
     int button_open_, button_close_;
     int button_euler_;
+    int button_gripper_;
+    
 	//! Number of buttons of the joystick
 	int num_of_buttons_;
 	//! Pointer to a vector for controlling the event when pushing the buttons
@@ -124,6 +129,9 @@ class MicoPad
 	
 	//! selected joint
 	int iSelectedJoint_;
+	
+	//! gripper mode
+	int gripper_mode_;
 };
 
 
@@ -142,6 +150,8 @@ MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true),
 	pnh_.param("button_open", button_open_, button_open_);			// Circle PS3
 	pnh_.param("button_close", button_close_, button_close_);	    // Square PS3
 	pnh_.param("button_euler", button_euler_, button_euler_);	    // Square PS3
+	
+	pnh_.param("button_gripper", button_gripper_, button_gripper_);	    // R2
 	
 	//pnh_.param<std::string>("mico_joy", topic_joy, "joy");	    	
 	//ROS_INFO("MicoPad: joy_topic = %s", topic_joy.c_str());
@@ -189,6 +199,7 @@ MicoPad::MicoPad() : ac_("/mico_arm_driver/fingers/finger_positions", true),
     
     control_mode_ = MODE_CARTESIAN_EULER;
     iSelectedJoint_ = 1;
+    gripper_mode_ = GRIPPER_MODE_2FG; 
    	
 }
 
@@ -242,7 +253,18 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 						ROS_INFO("Control Mode CARTESIAN");
 						}
 			}
-					
+		} else if(!bRegisteredButtonEvent[button_gripper_]){
+				bRegisteredButtonEvent[button_gripper_] = true;				
+				// Two modes 2fg / 3fg
+				if (gripper_mode_ == GRIPPER_MODE_2FG) {
+						gripper_mode_ = GRIPPER_MODE_3FG;
+						ROS_INFO("Gripper Mode 3FG");
+						}
+				else if (gripper_mode_ == GRIPPER_MODE_3FG) {
+						gripper_mode_ = GRIPPER_MODE_2FG;
+						ROS_INFO("Gripper Mode 2FG");
+						}
+						
 		// Allow to fold the arm throught the pad	
 		}else if (joy->buttons[button_fold_] == 1){
 			if(!bRegisteredButtonEvent[button_fold_]){
@@ -322,6 +344,11 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 				 if (goal.fingers.finger1 > 7000) goal.fingers.finger1 = 7000;
 				 goal.fingers.finger2 = finger_pos_.finger2 + 2000.0;
 				 if (goal.fingers.finger2 > 7000) goal.fingers.finger2 = 7000;
+				 if (gripper_mode_==GRIPPER_MODE_3FG) {
+					goal.fingers.finger3 = finger_pos_.finger3 + 2000.0;
+					if (goal.fingers.finger3 > 7000) goal.fingers.finger3 = 7000;					
+					}
+				 
 				 ac_.sendGoal(goal);
 				 ac_.waitForResult(ros::Duration(0.0));
                  
@@ -336,6 +363,11 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 				 if (goal.fingers.finger1 < 0) goal.fingers.finger1 = 0;
 				 goal.fingers.finger2 = finger_pos_.finger2 - 2000.0;
 				 if (goal.fingers.finger2 < 0) goal.fingers.finger2 = 0;				 			
+				 if (gripper_mode_==GRIPPER_MODE_3FG) {
+					goal.fingers.finger3 = finger_pos_.finger3 - 2000.0;
+					if (goal.fingers.finger3 < 0) goal.fingers.finger3 = 0;				 			
+					}
+
 				 ac_.sendGoal(goal);
 				 ac_.waitForResult(ros::Duration(0.0));                 
 			 }
