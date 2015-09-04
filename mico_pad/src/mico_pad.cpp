@@ -253,7 +253,8 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 						ROS_INFO("Control Mode CARTESIAN");
 						}
 			}
-		} else if(!bRegisteredButtonEvent[button_gripper_]){
+		} else if (joy->buttons[button_gripper_] == 1){
+                       if(!bRegisteredButtonEvent[button_gripper_]){
 				bRegisteredButtonEvent[button_gripper_] = true;				
 				// Two modes 2fg / 3fg
 				if (gripper_mode_ == GRIPPER_MODE_2FG) {
@@ -264,7 +265,7 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 						gripper_mode_ = GRIPPER_MODE_2FG;
 						ROS_INFO("Gripper Mode 2FG");
 						}
-						
+			}
 		// Allow to fold the arm throught the pad	
 		}else if (joy->buttons[button_fold_] == 1){
 			if(!bRegisteredButtonEvent[button_fold_]){
@@ -379,6 +380,7 @@ void MicoPad::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 			bRegisteredButtonEvent[button_down_] = false;
 			bRegisteredButtonEvent[button_select_] = false;
 			bRegisteredButtonEvent[button_fold_] = false;
+                        bRegisteredButtonEvent[button_gripper_] = false;
 			
 		}
 	}
