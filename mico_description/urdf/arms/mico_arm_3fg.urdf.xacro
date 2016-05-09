@@ -24,7 +24,8 @@
 	<xacro:property name="j1_lower_limit" value="-3.13"/> 
 	<xacro:property name="j1_upper_limit" value="3.13"/> 
 	<xacro:property name="j2_lower_limit" value="-3.13"/> 
-	<xacro:property name="j2_upper_limit" value="0.0"/> 
+	<!-- xacro:property name="j2_upper_limit" value="0.0"/ -->
+	<xacro:property name="j2_upper_limit" value="${PI/4}"/>  
     <xacro:property name="j3_lower_limit" value="${-5*PI/4}"/> 
 	<xacro:property name="j3_upper_limit" value="${PI/4}"/> 
 	<xacro:property name="j4_lower_limit" value="-3.13"/> 
