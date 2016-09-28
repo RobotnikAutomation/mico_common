@@ -5,7 +5,6 @@
   <xacro:macro name="ros_control">
     <gazebo>
       <plugin name="ros_control" filename="libgazebo_ros_control.so">
-        <!-- robotNamespace>mico</robotNamespace -->
          <robotNamespace>rb1</robotNamespace>
         <robotParam>robot_description</robotParam>
         <controlPeriod>0.001</controlPeriod>
@@ -50,6 +49,11 @@
 		<material>Gazebo/Grey</material>
 		<turnGravityOff>true</turnGravityOff>
 	</gazebo>
+	<gazebo reference="mico_link_finger_3">
+		<material>Gazebo/Grey</material>
+		<turnGravityOff>true</turnGravityOff>
+	</gazebo>
+
 
   </xacro:macro>
 	    
